@@ -13,32 +13,38 @@ def connect_db(app):
 class User(db.Model):
 
     __tablename__ = "users"
-    id = db.Column(db.Integer, primary_key=True, auto_increment=True)
-    username = db.Column(db.Text, nullable=False, unique=True)
-    password = db.Column(db.Text, nullable=False)
+    username = db.Column(db.String(20), primary_key=True, nullable=False, unique=True)
+    password = db.Column(db.String, nullable=False)
+    email = db.Column(db.String(50), nullable=False)
+    first_name = db.Column(db.String(30), nullable=False)
+    last_name = db.Column(db.String(30), nullable=False)
+
+
 
     @classmethod
-    def register(cls, username, pwd):
+    def register(cls, username, pwd, email, first_name, last_name):
         hashed = bcrypt.generate_password_hash(pwd)
         hashed_utf8 = hashed.decode("utf8")
 
-        return cls(username=username, password=hashed_utf8)
+        return cls(username=username, password=hashed_utf8, email=email, first_name=first_name, last_name=last_name)
 
 
     @classmethod
-    def authenticate(cls, username, pwd):
+    def authenticate(cls, username, password):
         u = User.query.filter_by(username=username).first()
 
-        if u and bcrypt.check_password_hash(u.password, pwd):
+        if u and bcrypt.check_password_hash(u.password, password):
             return u
         else:
+            print("wrong")
             return False
             
-class Tweet(db.Model):
-    __tablename__ = 'tweets'
+class Feedback(db.Model):
+    __tablename__ = 'feedback'
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
-    text = db.Column(db.Text, nullable=False)
-    user_id = db.Column(db.Integer, db.ForeignKey('users.id'))
+    title = db.Column(db.String(100), nullable=False)
+    content = db.Column(db.Text, nullable=False)
+    username = db.Column(db.String, db.ForeignKey('users.username'))
 
-    user = db.relationship('User', backref="tweets")
+    user = db.relationship('User', backref="feedback")
 
